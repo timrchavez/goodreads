@@ -68,15 +68,18 @@ class GoodreadsUser():
                                          'page': page})
         return [review.GoodreadsReview(r) for r in resp['reviews']['review']]
 
-    def books(self, shelf):
+    def books(self, shelf, pages):
         """Get all books on a specific shelf"""
-        resp = self._client.session.get("/review/list.xml",
-                                        {'v': 2, 'id': self.gid,
-                                         'shelf': shelf})
-        if 'review' in resp['reviews']:
-            return [book.GoodreadsBook(review["book"], self._client)
+        books = []
+        for page in range(1, pages):
+            resp = self._client.session.get("/review/list.xml",
+                                            {'v': 2, 'id': self.gid,
+                                             'shelf': shelf, 'page': page})
+            if 'review' in resp['reviews']:
+                books += [
+                    book.GoodreadsBook(review["book"], self._client)
                     for review in resp['reviews']['review']]
-        return []
+        return books
 
     def shelves(self, page=1):
         """Get the user's shelves. This method gets shelves only for users with
